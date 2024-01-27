@@ -13,10 +13,11 @@ func BroadcastClientsData(s *entity.ServerInfo, wg *sync.WaitGroup) {
 		time.Sleep(30 * time.Second)
 
 		for _, peer := range s.Connections() {
+			fmt.Println("tryin to write")
 			_, err := peer.Write([]byte(s.Addrs()[0]))
 
 			if err != nil {
-				s.CloseConnection(peer.LocalAddr().String())
+				s.CloseConnection(peer.RemoteAddr().String())
 				fmt.Println(err)
 			}
 		}

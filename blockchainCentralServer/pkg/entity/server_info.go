@@ -60,6 +60,7 @@ func (s *ServerInfo) Connections() []*net.TCPConn {
 
 func (s *ServerInfo) CloseConnection(conn string) {
 	s.mut.Lock()
+	fmt.Println("deleted: " + conn)
 	delete(s.connections, conn)
 	s.mut.Unlock()
 }
@@ -68,6 +69,7 @@ func (s *ServerInfo) Addrs() []string {
 	var addrs []string
 	s.mut.Lock()
 	for key := range s.connections {
+		fmt.Println("returning: " + key)
 		addrs = append(addrs, key)
 	}
 	s.mut.Unlock()

@@ -24,7 +24,7 @@ func TestBroadcastData(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	time.Sleep(32 * time.Second)
+	time.Sleep(30 * time.Second)
 
 	buff := make([]byte, 25)
 
@@ -40,8 +40,17 @@ func TestBroadcastData(t *testing.T) {
 
 	fmt.Println("\ncheck it pls: " + string(buff) + "\n")
 
+	clientConn.Close()
+
+	time.Sleep(61 * time.Second)
+
+	connections := si.Connections()
+
+	if len(connections) != 0 {
+		t.Fatal("connections slice ain't empty")
+	}
+
 	si.Stop()
 	wg.Wait()
-	clientConn.Close()
 	si.Listener().Close()
 }
