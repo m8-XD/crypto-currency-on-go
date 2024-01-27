@@ -2,6 +2,7 @@ package utils
 
 import (
 	"blockchainCentralServer/pkg/entity"
+	"fmt"
 	"sync"
 	"time"
 )
@@ -15,6 +16,7 @@ func Listen(si *entity.ServerInfo, wg *sync.WaitGroup) {
 		if err != nil {
 			continue
 		}
+		fmt.Println("client connected: " + conn.RemoteAddr().String())
 		si.AddConnection(conn)
 	}
 }

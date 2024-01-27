@@ -2,6 +2,7 @@ package utils
 
 import (
 	"blockchainCentralServer/pkg/entity"
+	"fmt"
 	"sync"
 	"time"
 )
@@ -15,6 +16,7 @@ func BroadcastClientsData(s *entity.ServerInfo, wg *sync.WaitGroup) {
 			_, err := peer.Write([]byte(s.Addrs()[0]))
 
 			if err != nil {
+				fmt.Println("client disconnected: " + peer.RemoteAddr().String())
 				s.CloseConnection(peer.RemoteAddr().String())
 			}
 		}
