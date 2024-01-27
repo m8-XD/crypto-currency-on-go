@@ -2,8 +2,8 @@ package utils_test
 
 import (
 	"blockchainCentralServer/pkg/utils"
-	"fmt"
 	"net"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -23,7 +23,7 @@ func TestBroadcastData(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-
+	clientConn.Write([]byte("test"))
 	time.Sleep(30 * time.Second)
 
 	buff := make([]byte, 25)
@@ -38,7 +38,9 @@ func TestBroadcastData(t *testing.T) {
 		t.Fatal("length of readed buffer is: 0")
 	}
 
-	fmt.Println("\ncheck it pls: " + string(buff) + "\n")
+	if strings.Compare(string(buff), "test") == 0 {
+		t.Fatal("buff is not 'test', but '" + string(buff) + "'")
+	}
 
 	clientConn.Close()
 

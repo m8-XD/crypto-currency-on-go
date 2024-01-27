@@ -9,7 +9,7 @@ import (
 type ServerInfo struct {
 	isRunning   bool
 	listener    *net.TCPListener
-	connections map[string]*net.TCPConn
+	connections map[*net.TCPConn]string
 	mut         sync.Mutex
 }
 
@@ -21,7 +21,7 @@ func (s *ServerInfo) Stop() {
 func (s *ServerInfo) Start() {
 	fmt.Println("starting the server(press ctrl + C to stop)")
 	s.isRunning = true
-	s.connections = make(map[string]*net.TCPConn)
+	s.connections = make(map[*net.TCPConn]string)
 }
 
 func (s *ServerInfo) Listener() *net.TCPListener {
@@ -41,8 +41,12 @@ func (s *ServerInfo) AddConnection(conn *net.TCPConn) {
 		fmt.Println("call Start function before adding a connection, skipping...")
 		return
 	}
+
+	buff := make([]byte, 25)
+	conn.Read(buff)
+
 	s.mut.Lock()
-	s.connections[conn.RemoteAddr().String()] = conn
+	s.connections[conn] = string(buff)
 	s.mut.Unlock()
 }
 
@@ -50,7 +54,7 @@ func (s *ServerInfo) Connections() []*net.TCPConn {
 	dst := make([]*net.TCPConn, len(s.connections))
 	i := 0
 	s.mut.Lock()
-	for _, connection := range s.connections {
+	for connection := range s.connections {
 		dst[i] = connection
 		i++
 	}
@@ -58,7 +62,7 @@ func (s *ServerInfo) Connections() []*net.TCPConn {
 	return dst
 }
 
-func (s *ServerInfo) CloseConnection(conn string) {
+func (s *ServerInfo) CloseConnection(conn *net.TCPConn) {
 	s.mut.Lock()
 	delete(s.connections, conn)
 	s.mut.Unlock()
@@ -67,8 +71,8 @@ func (s *ServerInfo) CloseConnection(conn string) {
 func (s *ServerInfo) Addrs() []string {
 	var addrs []string
 	s.mut.Lock()
-	for key := range s.connections {
-		addrs = append(addrs, key)
+	for _, value := range s.connections {
+		addrs = append(addrs, value)
 	}
 	s.mut.Unlock()
 	return addrs

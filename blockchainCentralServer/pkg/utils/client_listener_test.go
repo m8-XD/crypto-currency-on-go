@@ -29,11 +29,13 @@ func TestConnectionListener(t *testing.T) {
 	wg.Add(1)
 	go utils.Listen(si, &wg)
 	time.Sleep(2 * time.Second)
-	_, err := net.Dial("tcp", servAddr)
+	conn, err := net.Dial("tcp", servAddr)
 
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	conn.Write([]byte("test"))
 
 	time.Sleep(5 * time.Second)
 
