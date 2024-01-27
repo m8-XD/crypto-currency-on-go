@@ -12,7 +12,7 @@ func BroadcastClientsData(s *entity.ServerInfo, wg *sync.WaitGroup) {
 	defer wg.Done()
 	for s.IsRunning() {
 		time.Sleep(30 * time.Second)
-
+		fmt.Println("broadcasting data to " + fmt.Sprint(len(s.Connections())) + " peers")
 		for _, peer := range s.Connections() {
 			addresses := strings.Join(s.Addrs(), ",")
 			_, err := peer.Write([]byte(addresses))

@@ -3,6 +3,7 @@ package entity
 import (
 	"fmt"
 	"net"
+	"strings"
 	"sync"
 )
 
@@ -45,9 +46,22 @@ func (s *ServerInfo) AddConnection(conn *net.TCPConn) {
 	buff := make([]byte, 25)
 	conn.Read(buff)
 
+	if oldConn := checkIfExists(&s.connections, buff); oldConn != nil {
+		s.CloseConnection(oldConn)
+	}
+
 	s.mut.Lock()
 	s.connections[conn] = string(buff)
 	s.mut.Unlock()
+}
+
+func checkIfExists(connections *map[*net.TCPConn]string, buff []byte) *net.TCPConn {
+	for conn, addr := range *connections {
+		if strings.Compare(addr, string(buff)) == 0 {
+			return conn
+		}
+	}
+	return nil
 }
 
 func (s *ServerInfo) Connections() []*net.TCPConn {
