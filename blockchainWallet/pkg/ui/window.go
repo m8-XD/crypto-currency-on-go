@@ -5,7 +5,6 @@ package ui
 // A simple Gio program. See https://gioui.org for more information.
 
 import (
-	"blockchainCentralServer/pkg/entity"
 	"fmt"
 	"image/color"
 	"sync"
@@ -19,7 +18,7 @@ import (
 	"gioui.org/widget/material"
 )
 
-func Start(si *entity.ServerInfo, outerWG *sync.WaitGroup) {
+func Start(outerWG *sync.WaitGroup) {
 	w := app.NewWindow()
 	th := material.NewTheme()
 	th.Shaper = text.NewShaper(text.WithCollection(gofont.Collection()))
