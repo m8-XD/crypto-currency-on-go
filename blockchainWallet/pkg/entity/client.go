@@ -7,24 +7,33 @@ import (
 )
 
 type Client struct {
-	centralServ *net.Conn
+	centralServ net.Conn
 	localServ   *net.TCPListener
-	readPeers   []*net.Conn
-	writePeers  []*net.Conn
+	readPeers   []net.Conn
+	writePeers  []net.Conn
 	isRunning   bool
 	mut         sync.Mutex
 }
 
-func (c *Client) SetCentralServ(cs *net.Conn) {
+func (c *Client) SetCentralServ(cs net.Conn) {
 	c.centralServ = cs
 }
 
 func (c *Client) SetLocalServ(ls *net.TCPListener) {
 	c.localServ = ls
 }
+
+func (c *Client) CentralServ() net.Conn {
+	return c.centralServ
+}
+
+func (c *Client) LocalServ() *net.TCPListener {
+	return c.localServ
+}
+
 func (c *Client) Start() {
-	c.readPeers = make([]*net.Conn, 10)
-	c.writePeers = make([]*net.Conn, 10)
+	c.readPeers = make([]net.Conn, 10)
+	c.writePeers = make([]net.Conn, 10)
 	c.isRunning = true
 }
 
@@ -36,7 +45,7 @@ func (c *Client) IsRunning() bool {
 	return c.isRunning
 }
 
-func (c *Client) AddReadPeer(peer *net.Conn) {
+func (c *Client) AddReadPeer(peer net.Conn) {
 	if c.readPeers == nil {
 		fmt.Println("read peers slice is nil, pls call Start first! skipping...")
 		return
@@ -46,7 +55,7 @@ func (c *Client) AddReadPeer(peer *net.Conn) {
 	c.mut.Unlock()
 }
 
-func (c *Client) AddWritePeer(peer *net.Conn) {
+func (c *Client) AddWritePeer(peer net.Conn) {
 	if c.writePeers == nil {
 		fmt.Println("read peers slice is nil, pls call Start first! skipping...")
 		return
@@ -57,20 +66,20 @@ func (c *Client) AddWritePeer(peer *net.Conn) {
 }
 
 func (c *Client) ResetPeers() {
-	c.readPeers = make([]*net.Conn, 10)
-	c.writePeers = make([]*net.Conn, 10)
+	c.readPeers = make([]net.Conn, 10)
+	c.writePeers = make([]net.Conn, 10)
 }
 
-func (c *Client) WritePeers() []*net.Conn {
-	var toReturn []*net.Conn
+func (c *Client) WritePeers() []net.Conn {
+	var toReturn []net.Conn
 	c.mut.Lock()
 	copy(toReturn, c.writePeers)
 	c.mut.Unlock()
 	return toReturn
 }
 
-func (c *Client) ReadPeers() []*net.Conn {
-	var toReturn []*net.Conn
+func (c *Client) ReadPeers() []net.Conn {
+	var toReturn []net.Conn
 	c.mut.Lock()
 	copy(toReturn, c.readPeers)
 	c.mut.Unlock()

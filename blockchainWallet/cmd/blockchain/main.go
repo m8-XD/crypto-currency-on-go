@@ -23,8 +23,9 @@ func main() {
 
 	serverConn, err := net.Dial("tcp", "127.0.0.1:9000")
 	defer serverConn.Close()
+	serverConn.Write([]byte(fmt.Sprint(port)))
 
-	clientEnt.SetCentralServ(&serverConn)
+	clientEnt.SetCentralServ(serverConn)
 
 	tcpAddr, err := net.ResolveTCPAddr("tcp", "127.0.0.1:"+fmt.Sprint(port))
 	if err != nil {
@@ -50,6 +51,5 @@ func main() {
 	wg.Add(1)
 	ui.Start(&wg)
 
-	clientEnt.Stop()
 	wg.Wait()
 }
