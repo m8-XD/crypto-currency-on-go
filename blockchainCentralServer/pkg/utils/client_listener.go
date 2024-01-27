@@ -7,6 +7,8 @@ import (
 )
 
 func Listen(si *entity.ServerInfo, wg *sync.WaitGroup) {
+	defer wg.Done()
+
 	for si.IsRunning() {
 		si.Listener().SetDeadline(time.Now().Add(30 * time.Second))
 		conn, err := si.Listener().AcceptTCP()
@@ -15,5 +17,4 @@ func Listen(si *entity.ServerInfo, wg *sync.WaitGroup) {
 		}
 		si.AddConnection(conn)
 	}
-	wg.Done()
 }

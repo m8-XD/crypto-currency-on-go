@@ -21,6 +21,7 @@ func (s *ServerInfo) Stop() {
 func (s *ServerInfo) Start() {
 	fmt.Println("starting the server(press ctrl + C to stop)")
 	s.isRunning = true
+	s.connections = make(map[string]*net.TCPConn)
 }
 
 func (s *ServerInfo) Listener() *net.TCPListener {
@@ -36,8 +37,12 @@ func (s *ServerInfo) IsRunning() bool {
 }
 
 func (s *ServerInfo) AddConnection(conn *net.TCPConn) {
+	if s.connections == nil {
+		fmt.Println("call Start function before adding a connection, skipping...")
+		return
+	}
 	s.mut.Lock()
-	s.connections[conn.LocalAddr().String()] = conn
+	s.connections[conn.RemoteAddr().String()] = conn
 	s.mut.Unlock()
 }
 
@@ -59,12 +64,12 @@ func (s *ServerInfo) CloseConnection(conn string) {
 	s.mut.Unlock()
 }
 
-func (s *ServerInfo) Ports() []string {
-	var ports []string
+func (s *ServerInfo) Addrs() []string {
+	var addrs []string
 	s.mut.Lock()
 	for key := range s.connections {
-		ports = append(ports, key)
+		addrs = append(addrs, key)
 	}
 	s.mut.Unlock()
-	return ports
+	return addrs
 }
