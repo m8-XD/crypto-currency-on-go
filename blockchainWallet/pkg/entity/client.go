@@ -32,8 +32,7 @@ func (c *Client) LocalServ() *net.TCPListener {
 }
 
 func (c *Client) Start() {
-	c.readPeers = make([]net.Conn, 10)
-	c.writePeers = make([]net.Conn, 10)
+	c.ResetPeers()
 	c.isRunning = true
 }
 
@@ -66,21 +65,21 @@ func (c *Client) AddWritePeer(peer net.Conn) {
 }
 
 func (c *Client) ResetPeers() {
-	c.readPeers = make([]net.Conn, 10)
-	c.writePeers = make([]net.Conn, 10)
+	c.readPeers = make([]net.Conn, 0)
+	c.writePeers = make([]net.Conn, 0)
 }
 
 func (c *Client) WritePeers() []net.Conn {
-	var toReturn []net.Conn
 	c.mut.Lock()
+	toReturn := make([]net.Conn, len(c.writePeers))
 	copy(toReturn, c.writePeers)
 	c.mut.Unlock()
 	return toReturn
 }
 
 func (c *Client) ReadPeers() []net.Conn {
-	var toReturn []net.Conn
 	c.mut.Lock()
+	toReturn := make([]net.Conn, len(c.readPeers))
 	copy(toReturn, c.readPeers)
 	c.mut.Unlock()
 	return toReturn

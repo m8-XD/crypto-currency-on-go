@@ -40,7 +40,7 @@ func createWriteConnections(buff []byte, c *entity.Client) {
 		if strings.Compare(addrSt, c.LocalServ().Addr().String()) == 0 {
 			continue
 		}
-		fmt.Println("creating write connection from: " + c.LocalServ().Addr().String() + " to: " + addrSt)
+		fmt.Println("creating connection from: " + c.LocalServ().Addr().String() + " to: " + addrSt)
 		go createWriteConnection(addrSt, c)
 	}
 }
@@ -48,7 +48,7 @@ func createWriteConnections(buff []byte, c *entity.Client) {
 func createWriteConnection(addr string, c *entity.Client) {
 	conn, err := net.Dial("tcp", addr)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("error during conecting: " + err.Error())
 		return
 	}
 	c.AddWritePeer(conn)

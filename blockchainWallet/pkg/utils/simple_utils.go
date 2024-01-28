@@ -17,6 +17,9 @@ func fatal(err error, c *entity.Client) {
 func Write(msg string, c *entity.Client) {
 	peers := c.WritePeers()
 	for _, peer := range peers {
+		if peer == nil {
+			continue
+		}
 		peer.Write([]byte(msg))
 	}
 }
@@ -24,10 +27,13 @@ func Write(msg string, c *entity.Client) {
 func Read(c *entity.Client) []string {
 	peers := c.ReadPeers()
 	msgs := make([]string, len(peers))
-	for _, peer := range peers {
+	for i, peer := range peers {
+		if peer == nil {
+			continue
+		}
 		buff := make([]byte, BUFFER_SIZE)
 		peer.Read(buff)
-		msgs = append(msgs, string(buff))
+		msgs[i] = TrimAndCast(buff)
 	}
 	return msgs
 }

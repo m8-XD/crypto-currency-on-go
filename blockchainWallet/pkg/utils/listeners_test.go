@@ -5,6 +5,7 @@ import (
 	"blockchain/pkg/utils"
 	"fmt"
 	"net"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -84,22 +85,49 @@ func TestListeners(t *testing.T) {
 
 	time.Sleep(40 * time.Second)
 
-	if len(c.ReadPeers()) == 0 {
-		t.Fatal("no read peers for client 1")
-	}
-
-	if len(c1.ReadPeers()) == 0 {
-		t.Fatal("no read peers for client 2")
-	}
-
 	if len(c.WritePeers()) == 0 {
+		t.Log(c.WritePeers())
 		t.Fatal("no write peers for client 1")
 	}
 
 	if len(c1.WritePeers()) == 0 {
+		t.Log(c1.WritePeers())
 		t.Fatal("no write peers for client 2")
 	}
 
+	if len(c.ReadPeers()) == 0 {
+		t.Log(c.ReadPeers())
+		t.Fatal("no read peers for client 1")
+	}
+
+	if len(c1.ReadPeers()) == 0 {
+		t.Log(c1.ReadPeers())
+		t.Fatal("no read peers for client 2")
+	}
+
+	msg1 := "test"
+	msg2 := "test1"
+
+	utils.Write(msg1, c)
+	msgs1 := utils.Read(c1)
+
+	if strings.Compare(msg1, msgs1[0]) != 0 {
+		t.Log(len(msgs1))
+		t.Log(msgs1)
+		t.Log(len(c.ReadPeers()))
+		t.Fatal("first messages arent the same")
+	}
+
+	utils.Write(msg2, c1)
+	msgs2 := utils.Read(c)
+
+	if strings.Compare(msg2, msgs2[0]) != 0 {
+		t.Log(len(msgs2))
+		t.Log(msgs2)
+		t.Fatal("second messages arent the same")
+	}
+
 	c.Stop()
+	c1.Stop()
 	wg.Wait()
 }
