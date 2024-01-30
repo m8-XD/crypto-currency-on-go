@@ -12,7 +12,7 @@ import (
 
 var wg = sync.WaitGroup{}
 
-func main() {
+func main1() {
 
 	port, err := strconv.Atoi(os.Args[1])
 	if err != nil {
@@ -51,5 +51,12 @@ func main() {
 	wg.Add(1)
 	ui.Start(&wg)
 
+	wg.Wait()
+}
+
+func main() {
+
+	wg.Add(1)
+	ui.Start(&wg)
 	wg.Wait()
 }
