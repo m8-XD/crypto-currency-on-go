@@ -1,19 +1,26 @@
 package ui
 
 import (
+	"blockchain/pkg/cryptography"
+	"blockchain/pkg/entity"
+	"blockchain/pkg/utils"
 	"fmt"
+	"strconv"
+	"strings"
 	"sync"
+	"time"
 
 	"github.com/gen2brain/iup-go/iup"
 )
 
-func Start(wg *sync.WaitGroup) {
+func Start(c *entity.Client, wg *sync.WaitGroup) {
 
 	defer wg.Done()
 	iup.Open()
 	defer iup.Close()
 
-	privateKey := iup.Text().SetAttributes(`SIZE=80x`)
+	privateKey := iup.Text().SetHandle("pk")
+	privateKey.SetAttributes(`SIZE=80x`)
 
 	genKeyPairBtn := iup.Button("generate private key")
 	walletsFrame := iup.Frame(
@@ -22,7 +29,6 @@ func Start(wg *sync.WaitGroup) {
 			genKeyPairBtn,
 		),
 	).SetAttribute("TITLE", "Private key")
-
 	balance := iup.Text().SetHandle("balance")
 	balance.SetAttribute("READONLY", "YES")
 	balance.SetAttribute("VALUE", "0")
@@ -41,54 +47,33 @@ func Start(wg *sync.WaitGroup) {
 		balanceFrame,
 	)
 
-	pubKey1 := iup.Text().SetAttributes(`SIZE=80x`)
-	pubKey2 := iup.Text().SetAttributes(`SIZE=80x`)
-	amount1 := iup.Text().SetAttributes(`SIZE=80x`)
-	amount2 := iup.Text().SetAttributes(`SIZE=80x`)
+	pubKey := iup.Text().SetAttributes(`SIZE=80x`)
+	amount := iup.Text().SetAttributes(`SIZE=80x`)
 	change := iup.Text().SetAttributes(`SIZE=80x`)
 
 	key1Frame := iup.Frame(
 		iup.Hbox(
 			iup.Vbox(
 				iup.Label("Enter public key 1"),
-				pubKey1,
+				pubKey,
 			),
 			iup.Vbox(
 				iup.Label("Enter amount to send"),
-				amount1,
+				amount,
 			),
 		),
 	).SetAttribute("TITLE", "reciever 1")
-
-	key2Frame := iup.Frame(
-		iup.Hbox(
-			iup.Vbox(
-				iup.Label("Enter public key 2"),
-				pubKey2,
-			),
-			iup.Vbox(
-				iup.Label("Enter amount to send"),
-				amount2,
-			),
-		),
-	).SetAttribute("TITLE", "reciever 2")
 
 	doneBtn := iup.Button("Send")
 
 	doneBtnCb := func(ih iup.Ihandle, button, pressed, x, y int, status string) int {
 		if pressed == 1 {
 			privateKeyText := iup.GetAttribute(privateKey, "VALUE")
-			fmt.Println("privateKeyText: " + privateKeyText)
-			pubKey1Text := iup.GetAttribute(pubKey1, "VALUE")
-			fmt.Println("pubKey1Text " + pubKey1Text)
-			pubKey2Text := iup.GetAttribute(pubKey2, "VALUE")
-			fmt.Println("pubKey2Text" + pubKey2Text)
-			amount1Text := iup.GetAttribute(amount1, "VALUE")
-			fmt.Println("amount1Text" + amount1Text)
-			amount2Text := iup.GetAttribute(amount2, "VALUE")
-			fmt.Println("amount2Text " + amount2Text)
+			pubKeyText := iup.GetAttribute(pubKey, "VALUE")
+			amountText := iup.GetAttribute(amount, "VALUE")
 			changeText := iup.GetAttribute(change, "VALUE")
-			fmt.Println("changeText " + changeText)
+
+			createTX(c, privateKeyText, pubKeyText, amountText, changeText)
 		}
 		return iup.DEFAULT
 	}
@@ -96,18 +81,33 @@ func Start(wg *sync.WaitGroup) {
 	updateBalanceBtnCb := func(ih iup.Ihandle, button, pressed, x, y int, status string) int {
 		if pressed == 1 {
 			iup.GetHandle("balance").SetAttribute("VALUE", "123")
+		}
+		return iup.DEFAULT
+	}
 
+	genKeyBtnCb := func(ih iup.Ihandle, button, pressed, x, y int, status string) int {
+		if pressed == 1 {
+			kPair, err := cryptography.GenerateKeyPair()
+			if err != nil {
+				return iup.DEFAULT
+			}
+			privKey, err := kPair.Private()
+			if err != nil {
+				return iup.DEFAULT
+			}
+
+			iup.GetHandle("pk").SetAttribute("VALUE", privKey)
 		}
 		return iup.DEFAULT
 	}
 
 	iup.SetCallback(doneBtn, "BUTTON_CB", iup.ButtonFunc(doneBtnCb))
 	iup.SetCallback(updateBalanceBtn, "BUTTON_CB", iup.ButtonFunc(updateBalanceBtnCb))
+	iup.SetCallback(genKeyPairBtn, "BUTTON_CB", iup.ButtonFunc(genKeyBtnCb))
 
 	vbox1 := iup.Vbox(
 		hbox1,
 		key1Frame,
-		key2Frame,
 		iup.Label("Enter change amount"),
 		change,
 		doneBtn,
@@ -122,6 +122,36 @@ func Start(wg *sync.WaitGroup) {
 	iup.MainLoop()
 }
 
-func Error(msg string) {
+func createTX(c *entity.Client, senderPrivKey string, recieverPubKey string, amount string, change string) {
+	kPair, err := cryptography.GenerateKeyPairFromPrivate(senderPrivKey)
+	if err != nil {
+		fmt.Println("invalid private key")
+		return
+	}
+	pubKey, err := kPair.Public()
+	if err != nil {
+		fmt.Println("couldn't return public key, err: " + err.Error())
+		return
+	}
+	wAddr, err := cryptography.WaletAddr(pubKey)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
+	amount = strings.Replace(amount, ",", ".", -1)
+	change = strings.Replace(change, ",", ".", -1)
+
+	if !utils.IsNumber(amount) || !utils.IsNumber(change) {
+		fmt.Println("passed amount or change is not a number")
+		return
+	}
+	fAmount, _ := strconv.ParseFloat(amount, 64)
+	fChange, _ := strconv.ParseFloat(change, 64)
+	bHash := utils.ChooseBlock(fAmount + fChange)
+
+	timestamp := fmt.Sprint(time.Now().Unix())
+
+	payload := strings.Join([]string{wAddr, recieverPubKey, amount, change, bHash, timestamp}, ",")
+	utils.SendTX(c, kPair, payload)
 }

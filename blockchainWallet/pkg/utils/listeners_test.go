@@ -12,7 +12,6 @@ import (
 )
 
 func prepare(port int) (*entity.Client, error) {
-
 	clientEnt := entity.Client{}
 
 	serverConn, err := net.Dial("tcp", "127.0.0.1:9000")

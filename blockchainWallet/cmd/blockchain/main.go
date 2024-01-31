@@ -12,7 +12,7 @@ import (
 
 var wg = sync.WaitGroup{}
 
-func main1() {
+func main() {
 
 	port, err := strconv.Atoi(os.Args[1])
 	if err != nil {
@@ -49,14 +49,7 @@ func main1() {
 	// start peer listener
 
 	wg.Add(1)
-	ui.Start(&wg)
+	ui.Start(&clientEnt, &wg)
 
-	wg.Wait()
-}
-
-func main() {
-
-	wg.Add(1)
-	ui.Start(&wg)
 	wg.Wait()
 }

@@ -62,10 +62,10 @@ func TestSigning(t *testing.T) {
 		t.Fatal(err)
 	}
 	signature, err := cryptography.Sign(privateKey, hash)
-	if !cryptography.Validate(publicKey, hash, signature) {
+	if !cryptography.Validate(publicKey, hash, []byte(signature)) {
 		t.Fatal("validation failed (valid signature)")
 	}
-	if cryptography.Validate(publicKey, []byte("wrong hash"), signature) {
+	if cryptography.Validate(publicKey, []byte("wrong hash"), []byte(signature)) {
 		t.Fatal("validation failed (invalid signature)")
 	}
 }

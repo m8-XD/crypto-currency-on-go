@@ -1,21 +1,25 @@
 package utils
 
 import (
+	"blockchain/pkg/cryptography"
 	"blockchain/pkg/entity"
 	"bytes"
 	"fmt"
+	"os"
+	"strconv"
+	"strings"
 )
 
 const BUFFER_SIZE int = 10240
 
 func fatal(err error, c *entity.Client) {
 	fmt.Println(err)
-	//TODO add ui pop-up
-	c.Stop()
+	os.Exit(1)
 }
 
 func Write(msg string, c *entity.Client) {
 	peers := c.WritePeers()
+	fmt.Println("write: " + msg)
 	for _, peer := range peers {
 		if peer == nil {
 			continue
@@ -40,4 +44,30 @@ func Read(c *entity.Client) []string {
 
 func TrimAndCast(buff []byte) string {
 	return string(bytes.Trim(buff, "\x00"))
+}
+
+func IsNumber(num string) bool {
+	_, err := strconv.ParseFloat(num, 64)
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+func SendTX(c *entity.Client, kPair *cryptography.KeyPair, payload string) {
+	privKey, err := kPair.Private()
+	if err != nil {
+		return
+	}
+	ds, err := cryptography.Sign(privKey, []byte(payload))
+	if err != nil {
+		fmt.Println("couldn't generate digital signature: " + err.Error())
+		return
+	}
+	txText := strings.Join([]string{payload, ds}, ":")
+	Write(txText, c)
+}
+
+func ChooseBlock(amount float64) string {
+	return "someblock: " + fmt.Sprint(amount)
 }

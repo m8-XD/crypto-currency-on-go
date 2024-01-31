@@ -1,7 +1,6 @@
 package cryptography
 
 import (
-	"blockchain/pkg/ui"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
@@ -50,7 +49,6 @@ func GenerateKeyPair() (*KeyPair, error) {
 	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 
 	if err != nil {
-		fmt.Println("cannot generate key pair: " + err.Error())
 		return nil, err
 	}
 
@@ -62,42 +60,30 @@ func GenerateKeyPairFromPrivate(privateKeySt string) (*KeyPair, error) {
 	privateKey, err := decodePrivate(privateKeySt)
 
 	if err != nil {
-		ui.Error("invalid private key")
-		fmt.Println(err)
+		fmt.Println("!!!invalid private key!!!")
 		return nil, err
 	}
 	return &KeyPair{privateKey, &privateKey.PublicKey}, nil
 }
 
-func Sign(privateKeySt string, hash []byte) (signature []byte, err error) {
+func Sign(privateKeySt string, hash []byte) (signature string, err error) {
 	privateKey, err := decodePrivate(privateKeySt)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
-	signature, err = ecdsa.SignASN1(rand.Reader, privateKey, hash)
+	byteSign, err := ecdsa.SignASN1(rand.Reader, privateKey, hash)
+	signature = string(byteSign)
 	return
 }
 
 func Validate(publicKeySt string, hash []byte, signature []byte) bool {
 	publicKey, err := decodePublic(publicKeySt)
 	if err != nil {
-		fmt.Println("invalid public key to validate")
 		return false
 	}
 	return ecdsa.VerifyASN1(publicKey, hash, signature)
 }
 
-func wrapPrivate(key string) string {
-	key = strings.Replace(key, "@", "\n", -1)
-	key = privateKeyPref + key + privateKeySuff
-	return key
-}
-
-func wrapPublic(key string) string {
-	key = strings.Replace(key, "@", "\n", -1)
-	key = publicKeyPref + key + publicKeySuff
-	return key
-}
 func generatePublicKey(privateKey *ecdsa.PrivateKey) *ecdsa.PublicKey {
 	return &privateKey.PublicKey
 }
@@ -137,4 +123,16 @@ func trimPublicKey(publicKey string) string {
 	publicKey = strings.TrimSuffix(publicKey, publicKeySuff)
 	publicKey = strings.Replace(publicKey, "\n", "@", -1)
 	return publicKey
+}
+
+func wrapPrivate(key string) string {
+	key = strings.Replace(key, "@", "\n", -1)
+	key = privateKeyPref + key + privateKeySuff
+	return key
+}
+
+func wrapPublic(key string) string {
+	key = strings.Replace(key, "@", "\n", -1)
+	key = publicKeyPref + key + publicKeySuff
+	return key
 }
