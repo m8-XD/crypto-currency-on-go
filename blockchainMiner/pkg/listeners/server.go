@@ -21,8 +21,7 @@ func ServerListen(c *entity.Client, wg *sync.WaitGroup) {
 		_, err := centralServ.Read(buff)
 
 		if err != nil {
-			utils.Fatal(err, c)
-			return
+			panic(err)
 		}
 		fmt.Println("received data from server: " + string(buff))
 		go createWriteConnections(buff, c)

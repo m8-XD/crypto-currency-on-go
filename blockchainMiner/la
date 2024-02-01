@@ -17,13 +17,13 @@ type Miner struct {
 
 // transaction
 type tx struct {
-	WAddr     string
-	RecWAddr  string //reciever wallet address
-	Amount    float64
-	Change    float64
-	BHash     string //block hash
-	Timestamp int64
-	DS        string //digital signature
+	wAddr     string
+	recWAddr  string //reciever wallet address
+	amount    float64
+	change    float64
+	bHash     string //block hash
+	timestamp int64
+	ds        string //digital signature
 }
 
 func (m *Miner) IsRunning() bool {
@@ -58,8 +58,7 @@ func (m *Miner) NextTx() (*tx, bool) {
 		return nil, false
 	}
 	last := m.txs[len(m.txs)-1]
-	m.txs = m.txs[:len(m.txs)-1]
-	return &last, true
+	return m.txs[len(m.txs)-1], true
 }
 
 func parseTX(txRaw string) (txn tx, err error) {
@@ -83,12 +82,12 @@ func parseTX(txRaw string) (txn tx, err error) {
 		return
 	}
 	txn = tx{
-		WAddr:     payload[0],
-		RecWAddr:  payload[1],
-		Amount:    amount,
-		Change:    change,
-		BHash:     payload[4],
-		Timestamp: timestamp,
-		DS:        ds}
+		wAddr:     payload[0],
+		recWAddr:  payload[1],
+		amount:    amount,
+		change:    change,
+		bHash:     payload[4],
+		timestamp: timestamp,
+		ds:        ds}
 	return
 }

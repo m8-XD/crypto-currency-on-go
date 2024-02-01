@@ -5,17 +5,11 @@ import (
 	"blockchain/pkg/entity"
 	"bytes"
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
 )
 
 const BUFFER_SIZE int = 10240
-
-func Fatal(err error, c *entity.Client) {
-	fmt.Println(err)
-	os.Exit(1)
-}
 
 func Write(msg string, c *entity.Client) {
 	peers := c.WritePeers()
