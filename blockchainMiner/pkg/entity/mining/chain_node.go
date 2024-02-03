@@ -1,4 +1,4 @@
-package entity
+package mining
 
 type node struct {
 }

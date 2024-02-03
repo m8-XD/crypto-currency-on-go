@@ -91,10 +91,7 @@ func Start(c *entity.Client, wg *sync.WaitGroup) {
 			if err != nil {
 				return iup.DEFAULT
 			}
-			privKey, err := kPair.Private()
-			if err != nil {
-				return iup.DEFAULT
-			}
+			privKey := kPair.PrivateHex()
 
 			iup.GetHandle("pk").SetAttribute("VALUE", privKey)
 		}
@@ -123,17 +120,17 @@ func Start(c *entity.Client, wg *sync.WaitGroup) {
 }
 
 func createTX(c *entity.Client, senderPrivKey string, recieverPubKey string, amount string, change string) {
-	kPair, err := cryptography.GenerateKeyPairFromPrivate(senderPrivKey)
+	kPair, err := cryptography.GenKeysFromPrivate(senderPrivKey)
 	if err != nil {
 		fmt.Println("invalid private key")
 		return
 	}
-	pubKey, err := kPair.Public()
+	pubKey := kPair.Public()
 	if err != nil {
 		fmt.Println("couldn't return public key, err: " + err.Error())
 		return
 	}
-	wAddr, err := cryptography.WaletAddr(pubKey)
+	wAddr := cryptography.WaletAddr(pubKey)
 	if err != nil {
 		fmt.Println(err)
 		return

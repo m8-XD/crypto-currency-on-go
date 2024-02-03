@@ -2,6 +2,7 @@ package cryptography_test
 
 import (
 	"blockchain/pkg/cryptography"
+	"bytes"
 	"strings"
 	"testing"
 )
@@ -12,97 +13,44 @@ func TestKeyGeneration(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	privateKey, err := keyPair.Private()
-	if err != nil {
-		t.Fatal(err)
-	}
-	publicKey, err := keyPair.Public()
-	if err != nil {
-		t.Fatal(err)
-	}
-	newKeyPair, err := cryptography.GenerateKeyPairFromPrivate(privateKey)
+	privateKey := keyPair.PrivateHex()
+	publicKey := keyPair.Public()
+	newKeyPair, err := cryptography.GenKeysFromPrivate(privateKey)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	newPrivateKey, err := newKeyPair.Private()
-	if err != nil {
-		t.Fatal(err)
-	}
-	newPublicKey, err := newKeyPair.Public()
-	if err != nil {
-		t.Fatal(err)
-	}
+	newPrivateKey := newKeyPair.PrivateHex()
+	newPublicKey := newKeyPair.Public()
 	if !strings.EqualFold(privateKey, newPrivateKey) {
 		t.Fatal("private keys aren't equal")
 	}
-	if !strings.EqualFold(publicKey, newPublicKey) {
+	if !strings.EqualFold(string(publicKey), string(newPublicKey)) {
 		t.Fatal("public keys aren't equal")
 	}
 }
 
-func TestSigning(t *testing.T) {
+func TestRecoveringKey(t *testing.T) {
 	keyPair, err := cryptography.GenerateKeyPair()
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	privateKey := keyPair.PrivateHex()
+	publicKey := keyPair.Public()
 
 	toSign := "foobar"
 
-	privateKey, err := keyPair.Private()
+	signature, err := cryptography.Sign(privateKey, []byte(toSign))
 	if err != nil {
 		t.Fatal(err)
 	}
-	publicKey, err := keyPair.Public()
-	if err != nil {
-		t.Fatal(err)
-	}
-	hash, err := cryptography.HashMD5(toSign)
-	if err != nil {
-		t.Fatal(err)
-	}
-	signature, err := cryptography.Sign(privateKey, hash)
-	if !cryptography.Validate(publicKey, hash, []byte(signature)) {
-		t.Fatal("validation failed (valid signature)")
-	}
-	if cryptography.Validate(publicKey, []byte("wrong hash"), []byte(signature)) {
-		t.Fatal("validation failed (invalid signature)")
-	}
-}
-
-func TestGenPublicWithRawPrivate(t *testing.T) {
-
-	keyPair, err := cryptography.GenerateKeyPair()
+	recoveredKey, err := cryptography.Recover([]byte(toSign), signature)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	privateKey, err := keyPair.Private()
-	if err != nil {
-		t.Fatal(err)
-	}
-	publicKey, err := keyPair.Public()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	newKeyPair, err := cryptography.GenerateKeyPairFromPrivate(privateKey)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	newPrivateKey, err := newKeyPair.Private()
-	if err != nil {
-		t.Fatal(err)
-	}
-	newPublicKey, err := newKeyPair.Public()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if !strings.EqualFold(privateKey, newPrivateKey) {
-		t.Fatal("private keys aren't equal")
-	}
-	if !strings.EqualFold(publicKey, newPublicKey) {
-		t.Fatal("public keys aren't equal")
+	if !bytes.Equal(publicKey, recoveredKey) {
+		t.Fatal("keys are not equal!")
 	}
 }

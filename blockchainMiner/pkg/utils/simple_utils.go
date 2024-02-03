@@ -49,16 +49,14 @@ func IsNumber(num string) bool {
 }
 
 func SendTX(c *entity.Client, kPair *cryptography.KeyPair, payload string) {
-	privKey, err := kPair.Private()
-	if err != nil {
-		return
-	}
+	privKey := kPair.PrivateHex()
+
 	ds, err := cryptography.Sign(privKey, []byte(payload))
 	if err != nil {
 		fmt.Println("couldn't generate digital signature: " + err.Error())
 		return
 	}
-	txText := strings.Join([]string{payload, ds}, ":")
+	txText := strings.Join([]string{payload, string(ds)}, ":")
 	Write(txText, c)
 }
 

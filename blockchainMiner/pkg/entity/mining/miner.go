@@ -1,6 +1,7 @@
-package entity
+package mining
 
 import (
+	"blockchain/pkg/entity"
 	"errors"
 	"strconv"
 	"strings"
@@ -8,11 +9,13 @@ import (
 )
 
 type Miner struct {
-	client   *Client
-	txs      []tx //transactions
-	chain    []node
-	txMut    sync.Mutex
-	chainMut sync.Mutex
+	client      *entity.Client
+	txs         []tx //transactions
+	chain       []node
+	txMut       sync.Mutex
+	chainMut    sync.Mutex
+	LastBlockTs int64 //timestamp
+	LastTXts    int64 // timestamp
 }
 
 // transaction
@@ -27,14 +30,14 @@ type tx struct {
 }
 
 func (m *Miner) IsRunning() bool {
-	return m.client.isRunning
+	return m.client.IsRunning()
 }
 
-func (m *Miner) Client() *Client {
+func (m *Miner) Client() *entity.Client {
 	return m.client
 }
 
-func (m *Miner) SetClient(c *Client) {
+func (m *Miner) SetClient(c *entity.Client) {
 	m.client = c
 }
 
@@ -50,6 +53,10 @@ func (m *Miner) AddTX(txRaw string) {
 		m.txMut.Lock()
 		m.txs = append(m.txs, tx)
 		m.txMut.Unlock()
+		m.LastTXts = tx.Timestamp
+		if m.LastTXts-m.LastBlockTs >= 30 {
+			go Mine(m)
+		}
 	}
 }
 

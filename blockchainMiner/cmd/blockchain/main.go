@@ -2,6 +2,7 @@ package main
 
 import (
 	"blockchain/pkg/entity"
+	"blockchain/pkg/entity/mining"
 	"fmt"
 	"net"
 	"os"
@@ -19,7 +20,7 @@ func main() {
 	}
 
 	clientEnt := entity.Client{}
-	minerEnt := entity.Miner{}
+	minerEnt := mining.Miner{}
 
 	serverConn, err := net.Dial("tcp", "127.0.0.1:9000")
 	defer serverConn.Close()

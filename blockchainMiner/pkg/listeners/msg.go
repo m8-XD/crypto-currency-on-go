@@ -1,14 +1,14 @@
 package listeners
 
 import (
-	"blockchain/pkg/entity"
+	"blockchain/pkg/entity/mining"
 	"blockchain/pkg/utils"
 	"strings"
 	"sync"
 	"time"
 )
 
-func MsgListen(wg *sync.WaitGroup, m *entity.Miner) {
+func MsgListen(wg *sync.WaitGroup, m *mining.Miner) {
 	defer wg.Done()
 	for m.IsRunning() {
 		time.Sleep(5 * time.Second)
@@ -17,20 +17,14 @@ func MsgListen(wg *sync.WaitGroup, m *entity.Miner) {
 	}
 }
 
-func handleMsgs(m *entity.Miner, msgs []string) {
+func handleMsgs(m *mining.Miner, msgs []string) {
 	for _, msg := range msgs {
 		if strings.EqualFold(msg, "") {
 			continue
 		}
-		handleMsg(m, msg)
-	}
-}
-
-func handleMsg(m *entity.Miner, msg string) {
-	if strings.HasPrefix(msg, "valid") {
-		//validate
-		error
-	} else {
+		if strings.HasPrefix(msg, "block") {
+			continue
+		}
 		m.AddTX(msg)
 	}
 }
