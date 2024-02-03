@@ -3,6 +3,7 @@ package main
 import (
 	"blockchain/pkg/entity"
 	"blockchain/pkg/ui"
+	"blockchain/pkg/utils"
 	"fmt"
 	"net"
 	"os"
@@ -13,7 +14,6 @@ import (
 var wg = sync.WaitGroup{}
 
 func main() {
-
 	port, err := strconv.Atoi(os.Args[1])
 	if err != nil {
 		fmt.Println("please pass valid arguments, there should be only one (port number)")
@@ -44,12 +44,12 @@ func main() {
 
 	clientEnt.Start()
 
-	//start server listener
-	//start peer connector
-	// start peer listener
+	wg.Add(2)
+	go utils.ServerListen(&clientEnt, &wg)
+	go utils.ListenForPeers(&clientEnt, &wg)
 
 	wg.Add(1)
-	ui.Start(&clientEnt, &wg)
+	go ui.Start(&clientEnt, &wg)
 
 	wg.Wait()
 }

@@ -66,5 +66,5 @@ func SendTX(c *entity.Client, kPair *cryptography.KeyPair, payload string) {
 }
 
 func ChooseBlock(amount float64) string {
-	return "someblock: " + fmt.Sprint(amount)
+	return "foobar"
 }
