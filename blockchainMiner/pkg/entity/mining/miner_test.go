@@ -1,20 +1,19 @@
-package mining_test
+package mining
 
 import (
-	"blockchain/pkg/entity/mining"
 	"strings"
 	"testing"
-	"time"
 )
 
 func TestTXParsing(t *testing.T) {
 	txSt := "waddr1,waddr2,69.420,420.69,bHash,696969:digsign"
-	m := mining.Miner{}
+	m := Miner{}
 	m.AddTX(txSt)
-	tx, ok := m.NextTx()
-	if !ok {
+	chain := m.CopyChain()
+	if len(chain) == 0 {
 		t.Fatal("TX havent been added")
 	}
+	tx := chain[len(chain)-1].tx
 	if !strings.EqualFold(tx.WAddr, "waddr1") {
 		t.Fatal("1 param")
 	}
@@ -35,16 +34,5 @@ func TestTXParsing(t *testing.T) {
 	}
 	if !strings.EqualFold(tx.DS, "digsign") {
 		t.Fatal("7 param")
-	}
-}
-func TestPassToMinerRoutine(t *testing.T) {
-	txSt := "waddr1,waddr2,69.420,420.69,bHash,10:digsign"
-	txSt1 := "waddr1,waddr2,69.420,420.69,bHash,41:digsign"
-	m := mining.Miner{}
-	m.AddTX(txSt)
-	m.AddTX(txSt1)
-	time.Sleep(1 * time.Second)
-	if m.LastBlockTs != 41 {
-		t.Fatal("timestamps arent the same")
 	}
 }

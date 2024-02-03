@@ -3,19 +3,16 @@ package mining
 import (
 	"blockchain/pkg/entity"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 	"sync"
 )
 
 type Miner struct {
-	client      *entity.Client
-	txs         []tx //transactions
-	chain       []node
-	txMut       sync.Mutex
-	chainMut    sync.Mutex
-	LastBlockTs int64 //timestamp
-	LastTXts    int64 // timestamp
+	client   *entity.Client
+	chain    []node
+	chainMut sync.Mutex
 }
 
 // transaction
@@ -27,6 +24,7 @@ type tx struct {
 	BHash     string //block hash
 	Timestamp int64
 	DS        string //digital signature
+	Payload   string
 }
 
 func (m *Miner) IsRunning() bool {
@@ -43,31 +41,32 @@ func (m *Miner) SetClient(c *entity.Client) {
 
 func (m *Miner) Start() {
 	m.client.Start()
-	m.txs = make([]tx, 0)
 	m.chain = make([]node, 0)
 }
 
 func (m *Miner) AddTX(txRaw string) {
 	tx, err := parseTX(txRaw)
 	if err == nil {
-		m.txMut.Lock()
-		m.txs = append(m.txs, tx)
-		m.txMut.Unlock()
-		m.LastTXts = tx.Timestamp
-		if m.LastTXts-m.LastBlockTs >= 30 {
-			go Mine(m)
-		}
+		go Mine(m, tx)
+	} else {
+		fmt.Println(err)
 	}
 }
 
-func (m *Miner) NextTx() (*tx, bool) {
-	if len(m.txs) == 0 {
-		return nil, false
-	}
-	last := m.txs[len(m.txs)-1]
-	m.txs = m.txs[:len(m.txs)-1]
-	return &last, true
+func (m *Miner) CopyChain() []node {
+	chainCopy := make([]node, len(m.chain))
+	copy(chainCopy, m.chain)
+	return chainCopy
 }
+
+// func (m *Miner) NextTx() (*tx, bool) {
+// 	if len(m.txs) == 0 {
+// 		return nil, false
+// 	}
+// 	last := m.txs[len(m.txs)-1]
+// 	m.txs = m.txs[:len(m.txs)-1]
+// 	return &last, true
+// }
 
 func parseTX(txRaw string) (txn tx, err error) {
 	parsedTX := strings.Split(txRaw, ":")
@@ -96,6 +95,7 @@ func parseTX(txRaw string) (txn tx, err error) {
 		Change:    change,
 		BHash:     payload[4],
 		Timestamp: timestamp,
-		DS:        ds}
+		DS:        ds,
+		Payload:   payloadRaw}
 	return
 }

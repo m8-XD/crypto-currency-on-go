@@ -3,6 +3,7 @@ package main
 import (
 	"blockchain/pkg/entity"
 	"blockchain/pkg/entity/mining"
+	"blockchain/pkg/listeners"
 	"fmt"
 	"net"
 	"os"
@@ -47,9 +48,10 @@ func main() {
 
 	minerEnt.Start()
 
-	//start server listener
-	//start peer connector
-	// start peer listener
+	wg.Add(3)
+	go listeners.ServerListen(&clientEnt, &wg)
+	go listeners.ListenForPeers(&clientEnt, &wg)
+	go listeners.MsgListen(&minerEnt, &wg)
 
 	wg.Wait()
 }

@@ -23,7 +23,6 @@ func ServerListen(c *entity.Client, wg *sync.WaitGroup) {
 		if err != nil {
 			panic(err)
 		}
-		fmt.Println("received data from server: " + string(buff))
 		go createWriteConnections(buff, c)
 	}
 }

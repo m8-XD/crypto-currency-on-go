@@ -3,12 +3,13 @@ package listeners
 import (
 	"blockchain/pkg/entity/mining"
 	"blockchain/pkg/utils"
+	"fmt"
 	"strings"
 	"sync"
 	"time"
 )
 
-func MsgListen(wg *sync.WaitGroup, m *mining.Miner) {
+func MsgListen(m *mining.Miner, wg *sync.WaitGroup) {
 	defer wg.Done()
 	for m.IsRunning() {
 		time.Sleep(5 * time.Second)
@@ -25,6 +26,7 @@ func handleMsgs(m *mining.Miner, msgs []string) {
 		if strings.HasPrefix(msg, "block") {
 			continue
 		}
+		fmt.Println("received TX woring on it")
 		m.AddTX(msg)
 	}
 }
