@@ -46,7 +46,7 @@ func (m *Miner) Start() {
 	m.chain = append(m.chain, node{
 		Header: "0x00000000000000000000000000000000000000001",
 		TX: tx{
-			RecWAddr: "0xcc204cb37d35fdc3109928515dba53fa2c386143f4d374ac3cbb76106e85edf6",
+			RecWAddr: "0x4e2448db9e9b30178433434ccd8ea9534b5e28e2",
 			Amount:   123,
 		},
 	})
@@ -102,4 +102,8 @@ func parseTX(txRaw string) (txn tx, err error) {
 		DS:        ds,
 		Payload:   payloadRaw}
 	return
+}
+
+func (t tx) String() string {
+	return t.Payload
 }

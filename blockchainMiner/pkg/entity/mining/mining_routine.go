@@ -2,6 +2,8 @@ package mining
 
 import (
 	"blockchain/pkg/cryptography"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"strings"
 )
@@ -11,8 +13,9 @@ import (
 // [+]check if theres enough money in it
 // mine
 
-//one node = one tx
-//check so tx cannot be before last node in chain
+// one node = one tx
+// check so tx cannot be before last node in chain
+const miningDifficulty = 5
 
 func Mine(m *Miner, tx tx) {
 
@@ -32,9 +35,43 @@ func Mine(m *Miner, tx tx) {
 	}
 
 	m.chainMut.Lock()
-	m.chain = append(m.chain, node{})
-	fmt.Println("niceeee")
+	if !checkTimeValidity(m, tx) {
+		fmt.Println("current tx was created before latest, skipping...")
+		return
+	}
+	n := mineNode(m, tx)
+
+	m.chain = append(m.chain, n)
+	fmt.Println(n.Header)
 	m.chainMut.Unlock()
+}
+
+func mineNode(m *Miner, tx tx) node {
+	prefix := strings.Repeat("0", miningDifficulty)
+
+	lastNode := m.chain[len(m.chain)-1]
+
+	pHead := lastNode.Header
+	timestamp := tx.Timestamp
+
+	payload := pHead + tx.String() + string(timestamp)
+
+	header := ""
+	headerBytes := make([]byte, 0)
+	var nonce int64 = 0
+	for !strings.HasPrefix(header, prefix) {
+		nonce++
+		hash := sha256.Sum256([]byte(payload + fmt.Sprint(nonce)))
+		headerBytes = hash[:]
+		header = hex.EncodeToString(headerBytes)
+	}
+	return node{
+		Header:    header,
+		PHeader:   pHead,
+		Nonce:     nonce,
+		TX:        tx,
+		Timestamp: timestamp,
+	}
 }
 
 func validate(tx tx) (bool, error) {
@@ -72,4 +109,8 @@ func checkChange(refered tx, current tx) bool {
 		return false
 	}
 	return refered.Change >= current.Amount+current.Change
+}
+
+func checkTimeValidity(m *Miner, tx tx) bool {
+	return m.chain[len(m.chain)-1].Timestamp < tx.Timestamp
 }

@@ -18,6 +18,7 @@ func main() {
 	port, err := strconv.Atoi(os.Args[1])
 	if err != nil {
 		fmt.Println("please pass valid arguments, there should be only one (port number)")
+		return
 	}
 
 	clientEnt := entity.Client{}

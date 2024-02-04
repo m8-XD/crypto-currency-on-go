@@ -6,5 +6,4 @@ type node struct {
 	Nonce     int64  //nonce
 	TX        tx     //tx
 	Timestamp int64  //timestamp
-	WAddr     string //minerwallet
 }
