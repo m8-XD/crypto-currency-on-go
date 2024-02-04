@@ -68,5 +68,5 @@ func SendTX(c *entity.Client, kPair *cryptography.KeyPair, payload string) {
 }
 
 func ChooseBlock(amount float64) string {
-	return "foobar"
+	return "0x00000000000000000000000000000000000000001"
 }
