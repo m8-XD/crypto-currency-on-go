@@ -4,6 +4,7 @@ import (
 	"blockchain/pkg/cryptography"
 	"blockchain/pkg/entity"
 	"bytes"
+	"encoding/base64"
 	"fmt"
 	"os"
 	"strconv"
@@ -61,7 +62,8 @@ func SendTX(c *entity.Client, kPair *cryptography.KeyPair, payload string) {
 		fmt.Println("couldn't generate digital signature: " + err.Error())
 		return
 	}
-	txText := strings.Join([]string{payload, string(ds)}, ":")
+	dsEncoded := base64.StdEncoding.EncodeToString(ds)
+	txText := strings.Join([]string{payload, dsEncoded}, ":")
 	Write(txText, c)
 }
 

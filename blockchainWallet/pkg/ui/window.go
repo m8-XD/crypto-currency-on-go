@@ -105,7 +105,7 @@ func Start(c *entity.Client, wg *sync.WaitGroup) {
 	vbox1 := iup.Vbox(
 		hbox1,
 		key1Frame,
-		iup.Label("Enter change amount"),
+		iup.Label("Enter change:"),
 		change,
 		doneBtn,
 	).SetAttributes("MARGIN=5x5, GAP=5")
