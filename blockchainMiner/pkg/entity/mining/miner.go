@@ -2,6 +2,7 @@ package mining
 
 import (
 	"blockchain/pkg/entity"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"strconv"
@@ -42,6 +43,13 @@ func (m *Miner) SetClient(c *entity.Client) {
 func (m *Miner) Start() {
 	m.client.Start()
 	m.chain = make([]node, 0)
+	m.chain = append(m.chain, node{
+		Header: "0x00000000000000000000000000000000000000001",
+		TX: tx{
+			RecWAddr: "0xcc204cb37d35fdc3109928515dba53fa2c386143f4d374ac3cbb76106e85edf6",
+			Amount:   123,
+		},
+	})
 }
 
 func (m *Miner) AddTX(txRaw string) {
@@ -59,15 +67,6 @@ func (m *Miner) CopyChain() []node {
 	return chainCopy
 }
 
-// func (m *Miner) NextTx() (*tx, bool) {
-// 	if len(m.txs) == 0 {
-// 		return nil, false
-// 	}
-// 	last := m.txs[len(m.txs)-1]
-// 	m.txs = m.txs[:len(m.txs)-1]
-// 	return &last, true
-// }
-
 func parseTX(txRaw string) (txn tx, err error) {
 	parsedTX := strings.Split(txRaw, ":")
 	if len(parsedTX) != 2 {
@@ -75,6 +74,11 @@ func parseTX(txRaw string) (txn tx, err error) {
 		return
 	}
 	payloadRaw, ds := parsedTX[0], parsedTX[1]
+	dsBytes, err := base64.StdEncoding.DecodeString(ds)
+	ds = string(dsBytes)
+	if err != nil {
+		return
+	}
 	payload := strings.Split(payloadRaw, ",")
 	amount, err := strconv.ParseFloat(payload[2], 64)
 	if err != nil {

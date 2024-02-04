@@ -1,19 +1,17 @@
 package mining
 
 import (
+	"encoding/base64"
 	"strings"
 	"testing"
 )
 
 func TestTXParsing(t *testing.T) {
-	txSt := "waddr1,waddr2,69.420,420.69,bHash,696969:digsign"
-	m := Miner{}
-	m.AddTX(txSt)
-	chain := m.CopyChain()
-	if len(chain) == 0 {
-		t.Fatal("TX havent been added")
+	txSt := "waddr1,waddr2,69.420,420.69,bHash,696969:" + base64.StdEncoding.EncodeToString([]byte("digsign"))
+	tx, err := parseTX(txSt)
+	if err != nil {
+		t.Fatal(err)
 	}
-	tx := chain[len(chain)-1].tx
 	if !strings.EqualFold(tx.WAddr, "waddr1") {
 		t.Fatal("1 param")
 	}

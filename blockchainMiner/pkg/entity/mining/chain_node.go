@@ -1,10 +1,10 @@
 package mining
 
 type node struct {
-	//header
-	//parent header
-	//nonce
-	//tx
-	//timestamp
-	//minerwallet
+	Header    string //header
+	PHeader   string //parent header
+	Nonce     int64  //nonce
+	TX        tx     //tx
+	Timestamp int64  //timestamp
+	WAddr     string //minerwallet
 }

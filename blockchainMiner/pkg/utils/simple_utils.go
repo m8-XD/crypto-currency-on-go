@@ -1,12 +1,10 @@
 package utils
 
 import (
-	"blockchain/pkg/cryptography"
 	"blockchain/pkg/entity"
 	"bytes"
 	"fmt"
 	"strconv"
-	"strings"
 )
 
 const BUFFER_SIZE int = 10240
@@ -46,18 +44,6 @@ func IsNumber(num string) bool {
 		return false
 	}
 	return true
-}
-
-func SendTX(c *entity.Client, kPair *cryptography.KeyPair, payload string) {
-	privKey := kPair.PrivateHex()
-
-	ds, err := cryptography.Sign(privKey, []byte(payload))
-	if err != nil {
-		fmt.Println("couldn't generate digital signature: " + err.Error())
-		return
-	}
-	txText := strings.Join([]string{payload, string(ds)}, ":")
-	Write(txText, c)
 }
 
 func ChooseBlock(amount float64) string {
