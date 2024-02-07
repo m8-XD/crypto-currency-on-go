@@ -1,14 +1,15 @@
 package listeners
 
 import (
-	"blockchain/pkg/entity"
+	"blockchain/pkg/entity/mining"
 	"fmt"
 	"sync"
 	"time"
 )
 
-func ListenForPeers(c *entity.Client, wg *sync.WaitGroup) {
+func ListenForPeers(m *mining.Miner, wg *sync.WaitGroup) {
 	defer wg.Done()
+	c := m.Client()
 	for c.IsRunning() {
 		c.LocalServ().SetDeadline(time.Now().Add(30 * time.Second))
 		conn, err := c.LocalServ().Accept()
@@ -17,5 +18,6 @@ func ListenForPeers(c *entity.Client, wg *sync.WaitGroup) {
 			continue
 		}
 		go c.AddReadPeer(conn)
+		go m.SendChain()
 	}
 }

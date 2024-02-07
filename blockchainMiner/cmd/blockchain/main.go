@@ -14,7 +14,6 @@ import (
 var wg = sync.WaitGroup{}
 
 func main() {
-
 	port, err := strconv.Atoi(os.Args[1])
 	if err != nil {
 		fmt.Println("please pass valid arguments, there should be only one (port number)")
@@ -55,7 +54,7 @@ func main() {
 
 	wg.Add(3)
 	go listeners.ServerListen(&clientEnt, &wg)
-	go listeners.ListenForPeers(&clientEnt, &wg)
+	go listeners.ListenForPeers(&minerEnt, &wg)
 	go listeners.MsgListen(&minerEnt, &wg)
 
 	wg.Wait()

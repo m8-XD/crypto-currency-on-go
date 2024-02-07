@@ -2,16 +2,12 @@ package mining
 
 import (
 	"blockchain/pkg/cryptography"
+	"blockchain/pkg/utils"
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
 	"strings"
 )
-
-// [+] validate ds
-// [+] check if tx exists (input)
-// [+]check if theres enough money in it
-// mine
 
 // one node = one tx
 // check so tx cannot be before last node in chain
@@ -42,8 +38,9 @@ func Mine(m *Miner, tx tx) {
 	n := mineNode(m, tx)
 
 	m.chain = append(m.chain, n)
-	fmt.Println(n.Header)
 	m.chainMut.Unlock()
+
+	utils.Write(n.Pack(), m.client)
 }
 
 func mineNode(m *Miner, tx tx) node {
@@ -54,7 +51,7 @@ func mineNode(m *Miner, tx tx) node {
 	pHead := lastNode.Header
 	timestamp := tx.Timestamp
 
-	payload := pHead + tx.String() + string(timestamp)
+	payload := pHead + tx.String() + fmt.Sprint(timestamp)
 
 	header := ""
 	headerBytes := make([]byte, 0)

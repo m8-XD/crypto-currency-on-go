@@ -2,6 +2,7 @@ package listeners_test
 
 import (
 	"blockchain/pkg/entity"
+	"blockchain/pkg/entity/mining"
 	"blockchain/pkg/listeners"
 	"blockchain/pkg/utils"
 	"fmt"
@@ -12,7 +13,7 @@ import (
 	"time"
 )
 
-func prepare(port int) (*entity.Client, error) {
+func prepare(port int) (*mining.Miner, error) {
 	clientEnt := entity.Client{}
 
 	serverConn, err := net.Dial("tcp", "127.0.0.1:9000")

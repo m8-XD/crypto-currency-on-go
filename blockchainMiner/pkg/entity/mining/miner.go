@@ -2,6 +2,7 @@ package mining
 
 import (
 	"blockchain/pkg/entity"
+	"blockchain/pkg/utils"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -106,4 +107,14 @@ func parseTX(txRaw string) (txn tx, err error) {
 
 func (t tx) String() string {
 	return t.Payload
+}
+
+func (m *Miner) SendChain() {
+	m.chainMut.Lock()
+	chain := make([]string, len(m.chain))
+	for _, node := range m.chain {
+		chain = append(chain, node.Pack())
+	}
+	m.chainMut.Unlock()
+	utils.Write(strings.Join(chain, ";"), m.client)
 }
