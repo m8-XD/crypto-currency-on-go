@@ -3,6 +3,7 @@ package entity
 import (
 	"fmt"
 	"net"
+	"strings"
 	"sync"
 )
 
@@ -13,6 +14,9 @@ type Client struct {
 	writePeers  []net.Conn
 	isRunning   bool
 	mut         sync.Mutex
+
+	chain    []Node //copy of blockchain
+	chainMut sync.Mutex
 }
 
 func (c *Client) SetCentralServ(cs net.Conn) {
@@ -83,4 +87,34 @@ func (c *Client) ReadPeers() []net.Conn {
 	copy(toReturn, c.readPeers)
 	c.mut.Unlock()
 	return toReturn
+}
+
+func (c *Client) AddNode(n *Node) {
+	c.chainMut.Lock()
+	lastNode := c.chain[len(c.chain)-1]
+	if strings.EqualFold(lastNode.Header, n.PHeader) {
+		c.chain = append(c.chain, *n)
+	}
+	c.chainMut.Unlock()
+
+}
+
+func (c *Client) Chain() []Node {
+	copychain := make([]Node, len(c.chain))
+	copy(copychain, c.chain)
+	return copychain
+}
+
+func (c *Client) ReceiveChain(chainRaw string) {
+	chainSt := strings.Split(chainRaw, ";")
+	chain := make([]Node, len(chainSt))
+
+	for _, nodeSt := range chainSt {
+		node, err := Unpack(nodeSt)
+		if err != nil {
+			return
+		}
+		chain = append(chain, *node)
+	}
+	c.chain = chain
 }

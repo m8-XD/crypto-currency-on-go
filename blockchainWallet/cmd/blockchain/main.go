@@ -3,7 +3,7 @@ package main
 import (
 	"blockchain/pkg/entity"
 	"blockchain/pkg/ui"
-	"blockchain/pkg/utils"
+	"blockchain/pkg/utils/listeners"
 	"fmt"
 	"net"
 	"os"
@@ -45,8 +45,8 @@ func main() {
 	clientEnt.Start()
 
 	wg.Add(2)
-	go utils.ServerListen(&clientEnt, &wg)
-	go utils.ListenForPeers(&clientEnt, &wg)
+	go listeners.ServerListen(&clientEnt, &wg)
+	go listeners.ListenForPeers(&clientEnt, &wg)
 
 	wg.Add(1)
 	go ui.Start(&clientEnt, &wg)

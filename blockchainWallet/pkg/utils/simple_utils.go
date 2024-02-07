@@ -13,7 +13,7 @@ import (
 
 const BUFFER_SIZE int = 10240
 
-func fatal(err error, c *entity.Client) {
+func Fatal(err error, c *entity.Client) {
 	fmt.Println(err)
 	os.Exit(1)
 }

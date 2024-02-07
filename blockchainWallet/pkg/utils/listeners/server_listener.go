@@ -1,7 +1,8 @@
-package utils
+package listeners
 
 import (
 	"blockchain/pkg/entity"
+	"blockchain/pkg/utils"
 	"bytes"
 	"fmt"
 	"net"
@@ -14,13 +15,13 @@ import (
 func ServerListen(c *entity.Client, wg *sync.WaitGroup) {
 	defer wg.Done()
 	centralServ := c.CentralServ()
-	buff := make([]byte, BUFFER_SIZE)
+	buff := make([]byte, utils.BUFFER_SIZE)
 	for c.IsRunning() {
 		centralServ.SetReadDeadline(time.Now().Add(1 * time.Minute))
 		_, err := centralServ.Read(buff)
 
 		if err != nil {
-			fatal(err, c)
+			utils.Fatal(err, c)
 			return
 		}
 		go createWriteConnections(buff, c)
@@ -30,7 +31,7 @@ func ServerListen(c *entity.Client, wg *sync.WaitGroup) {
 func createWriteConnections(buff []byte, c *entity.Client) {
 	addrs := bytes.Split(buff, []byte{','})
 	for _, addr := range addrs {
-		addrSt := TrimAndCast(addr)
+		addrSt := utils.TrimAndCast(addr)
 		// ip: n.n.n.n:port, so minimum length of ip is 9
 		if utf8.RuneCountInString(addrSt) < 9 {
 			addrSt = "127.0.0.1:" + addrSt

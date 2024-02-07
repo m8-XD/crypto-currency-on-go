@@ -1,8 +1,9 @@
-package utils_test
+package listeners_test
 
 import (
 	"blockchain/pkg/entity"
 	"blockchain/pkg/utils"
+	"blockchain/pkg/utils/listeners"
 	"fmt"
 	"net"
 	"strings"
@@ -48,8 +49,8 @@ func TestConnection(t *testing.T) {
 
 	wg := sync.WaitGroup{}
 	wg.Add(2)
-	go utils.ListenForPeers(c, &wg)
-	go utils.ServerListen(c, &wg)
+	go listeners.ListenForPeers(c, &wg)
+	go listeners.ServerListen(c, &wg)
 
 	time.Sleep(40 * time.Second)
 
@@ -75,12 +76,12 @@ func TestListeners(t *testing.T) {
 
 	wg := sync.WaitGroup{}
 	wg.Add(2)
-	go utils.ListenForPeers(c, &wg)
-	go utils.ServerListen(c, &wg)
+	go listeners.ListenForPeers(c, &wg)
+	go listeners.ServerListen(c, &wg)
 
 	wg.Add(2)
-	go utils.ListenForPeers(c1, &wg)
-	go utils.ServerListen(c1, &wg)
+	go listeners.ListenForPeers(c1, &wg)
+	go listeners.ServerListen(c1, &wg)
 
 	time.Sleep(40 * time.Second)
 

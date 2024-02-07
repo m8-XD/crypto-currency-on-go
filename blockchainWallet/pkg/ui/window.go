@@ -9,9 +9,13 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unicode/utf8"
 
 	"github.com/gen2brain/iup-go/iup"
 )
+
+var balance iup.Ihandle
+var privateKey iup.Ihandle
 
 func Start(c *entity.Client, wg *sync.WaitGroup) {
 
@@ -29,7 +33,7 @@ func Start(c *entity.Client, wg *sync.WaitGroup) {
 			genKeyPairBtn,
 		),
 	).SetAttribute("TITLE", "Private key")
-	balance := iup.Text().SetHandle("balance")
+	balance = iup.Text().SetHandle("balance")
 	balance.SetAttribute("READONLY", "YES")
 	balance.SetAttribute("VALUE", "0")
 
@@ -80,7 +84,8 @@ func Start(c *entity.Client, wg *sync.WaitGroup) {
 
 	updateBalanceBtnCb := func(ih iup.Ihandle, button, pressed, x, y int, status string) int {
 		if pressed == 1 {
-			iup.GetHandle("balance").SetAttribute("VALUE", "123")
+			UpdateBalance(c.Chain())
+			fmt.Println("slhdfldsh")
 		}
 		return iup.DEFAULT
 	}
@@ -151,4 +156,28 @@ func createTX(c *entity.Client, senderPrivKey string, recieverPubKey string, amo
 
 	payload := strings.Join([]string{wAddr, recieverPubKey, amount, change, bHash, timestamp}, ",")
 	utils.SendTX(c, kPair, payload)
+}
+
+func UpdateBalance(chain []entity.Node) {
+	privateKeyText := iup.GetAttribute(privateKey, "VALUE")
+	if utf8.RuneCountInString(privateKeyText) == 0 {
+		return
+	}
+	balanceAmount := getBalanceFor(privateKeyText, chain)
+	iup.SetAttribute(balance, "VALUE", fmt.Sprint(balanceAmount))
+}
+
+func getBalanceFor(key string, chain []entity.Node) int64 {
+	var balance int64 = 0
+	for _, node := range chain {
+		if strings.EqualFold(node.TX.WAddr, key) {
+			balance -= int64(node.TX.Amount)
+			balance += int64(node.TX.Change)
+		}
+		if strings.EqualFold(node.TX.RecWAddr, key) {
+			balance += int64(node.TX.Amount)
+			balance -= int64(node.TX.Change)
+		}
+	}
+	return balance
 }

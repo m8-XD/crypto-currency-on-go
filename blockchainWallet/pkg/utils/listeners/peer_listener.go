@@ -1,4 +1,4 @@
-package utils
+package listeners
 
 import (
 	"blockchain/pkg/entity"
